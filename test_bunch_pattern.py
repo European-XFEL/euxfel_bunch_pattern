@@ -1,26 +1,35 @@
 import numpy as np
-import bunch_pattern
+import bunch_pattern as bp
 
 import pytest
 
 def test_get_charge():
     a = np.arange(16)
-    np.testing.assert_array_equal(bunch_pattern.get_charge(a),
-                                  bunch_pattern.CHARGE_VALUES)
+    np.testing.assert_array_equal(bp.get_charge(a), bp.CHARGE_VALUES)
 
     # Higher bits shouldn't interfere with the charges
-    np.testing.assert_array_equal(bunch_pattern.get_charge(a + (0xff << 4)),
-                                  bunch_pattern.CHARGE_VALUES)
+    np.testing.assert_array_equal(bp.get_charge(a + (0xff << 4)),
+                                  bp.CHARGE_VALUES)
 
 def test_indices_at_destination():
     a = np.arange(9) << 18
-    res = bunch_pattern.indices_at_destination(a, bunch_pattern.DESTINATION_T4D)
+    res = bp.indices_at_destination(a, bp.DESTINATION_T4D)
     np.testing.assert_array_equal(res, [4])
 
     with pytest.raises(ValueError):
         # Only DESTINATION_ constants can be used
-        bunch_pattern.indices_at_destination(
-            a, bunch_pattern.PHOTON_LINE_DEFLECTION)
+        bp.indices_at_destination(a, bp.PHOTON_LINE_DEFLECTION)
 
     with pytest.raises(ValueError):
-        bunch_pattern.indices_at_destination(a, bunch_pattern.DESTINATION_MASK)
+        bp.indices_at_destination(a, bp.DESTINATION_MASK)
+
+def test_indices_at_sase():
+    a = np.array([bp.DESTINATION_T4D, bp.DESTINATION_T5D,
+                  bp.DESTINATION_T4D + bp.PHOTON_LINE_DEFLECTION])
+
+    np.testing.assert_array_equal(bp.indices_at_sase(a, 1), [0])
+    np.testing.assert_array_equal(bp.indices_at_sase(a, 2), [1])
+    np.testing.assert_array_equal(bp.indices_at_sase(a, 3), [2])
+
+    with pytest.raises(ValueError):
+        bp.indices_at_sase(a, 4)
