@@ -6,12 +6,12 @@ import numpy as np
 CHARGE_MASK = 0xf
 
 # Charge in nC for the 16 possible 4 bit combinations
-CHARGE_VALUES = [
+CHARGE_VALUES = np.array([
     0.0, .02, .03, .04,
     .06, .09, .13, .18,
     .25, .36, .50, .71,
     1.0, 1.42, 2.0, 4.0,
-]
+])
 
 LASER_MASK = 0x3ff << 4
 
@@ -42,7 +42,7 @@ DESTINATION_B1D = 6    # B1 dump
 DESTINATION_B2D = 7    # B2 dump
 DESTINATION_TLD = 8
 
-EVT_TRIGGER_25 = 1 << 22
+EVT_TRIGGER_25 = 1 << 22  # ?
 
 TDS_INJ = 1 << 31
 TDS_BC1 = 1 << 30
@@ -51,3 +51,14 @@ WIRE_SCANNER = 1 << 28
 PHOTON_LINE_DEFLECTION = 1 << 27  # Soft kick (e.g. SA3)
 BEAM_DISTRIBUTION_KICK = 1 << 26
 # ----------------------------------------------------------------------------
+
+def get_charge(bunchpattern):
+    """Extract charge values in nC from bunch pattern data
+
+    Parameters
+    ----------
+    bunchpattern : int or numpy array of integers
+      The bunch pattern data
+    """
+    charge_bits = bunchpattern & CHARGE_MASK
+    return CHARGE_VALUES[charge_bits]
