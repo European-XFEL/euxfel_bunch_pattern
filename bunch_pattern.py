@@ -32,15 +32,18 @@ LASER_SEED9 = 1 << 16
 DESTINATION_MASK = 0xf << 18
 
 # 16 possible bit combinations for destinations, only 9 used at present
-DESTINATION_NONE = 0
-DESTINATION_I1LST = 1  # Laser stand-alone
-DESTINATION_T5D = 2    # SASE2 dump
-DESTINATION_G1D = 3    # Gun dump/valve
-DESTINATION_T4D = 4    # SASE1/3 dump
-DESTINATION_ILD = 5    # Injector dump
-DESTINATION_B1D = 6    # B1 dump
-DESTINATION_B2D = 7    # B2 dump
-DESTINATION_TLD = 8
+DESTINATION_NONE = 0 << 18
+DESTINATION_I1LST = 1 << 18  # Laser stand-alone
+DESTINATION_T5D = 2 << 18  # SASE2 dump
+DESTINATION_G1D = 3 << 18   # Gun dump/valve
+DESTINATION_T4D = 4 << 18   # SASE1/3 dump
+DESTINATION_ILD = 5 << 18   # Injector dump
+DESTINATION_B1D = 6 << 18   # B1 dump
+DESTINATION_B2D = 7 << 18   # B2 dump
+DESTINATION_TLD = 8 << 18
+_DESTINATIONS = {DESTINATION_NONE, DESTINATION_I1LST, DESTINATION_T5D,
+                 DESTINATION_G1D, DESTINATION_T4D, DESTINATION_ILD,
+                 DESTINATION_B1D, DESTINATION_B2D, DESTINATION_TLD}
 
 EVT_TRIGGER_25 = 1 << 22  # ?
 
@@ -62,3 +65,24 @@ def get_charge(bunchpattern):
     """
     charge_bits = bunchpattern & CHARGE_MASK
     return CHARGE_VALUES[charge_bits]
+
+def indices_at_destination(bunchpattern, destination):
+    """Find which pulses are sent to a given destination
+
+    Parameters
+    ----------
+    bunchpattern: numpy array
+      The bunch pattern data
+    destination: int
+      One of the DESTINATION_* constants in this module.
+
+    Returns
+    -------
+    indices: numpy array
+      The 0-based indexes of the pulses for the specified destination
+    """
+    if destination not in _DESTINATIONS:
+        raise ValueError("Unrecognised destination: {}".format(destination))
+
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+    return matched.nonzero()[0]
