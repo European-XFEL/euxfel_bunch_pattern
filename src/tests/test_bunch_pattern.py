@@ -1,7 +1,7 @@
 import numpy as np
-import bunch_pattern as bp
+from nose.tools import assert_raises
 
-import pytest
+import bunch_pattern as bp
 
 def test_get_charge():
     a = np.arange(16)
@@ -16,11 +16,11 @@ def test_indices_at_destination():
     res = bp.indices_at_destination(a, bp.DESTINATION_T4D)
     np.testing.assert_array_equal(res, [4])
 
-    with pytest.raises(ValueError):
+    with assert_raises(ValueError):
         # Only DESTINATION_ constants can be used
         bp.indices_at_destination(a, bp.PHOTON_LINE_DEFLECTION)
 
-    with pytest.raises(ValueError):
+    with assert_raises(ValueError):
         bp.indices_at_destination(a, bp.DESTINATION_MASK)
 
 def test_indices_at_sase():
@@ -31,5 +31,5 @@ def test_indices_at_sase():
     np.testing.assert_array_equal(bp.indices_at_sase(a, 2), [1])
     np.testing.assert_array_equal(bp.indices_at_sase(a, 3), [2])
 
-    with pytest.raises(ValueError):
+    with assert_raises(ValueError):
         bp.indices_at_sase(a, 4)
