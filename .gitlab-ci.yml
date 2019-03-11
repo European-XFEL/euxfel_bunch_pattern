@@ -1,11 +1,11 @@
-image: python:3.6
-
-before_script:
-    - echo '*** Set necessary proxies so this machine can access Internet ***'
-    - export http_proxy="http://exflwgs06.desy.de:3128/"
-    - export https_proxy="http://exflwgs06.desy.de:3128/"
-    - pip install numpy pytest
+image: europeanxfel/karabo-ci:centos-7
 
 test:
   script:
-    - pytest
+    - export REL_OS_NAME=$(lsb_release -is)
+    - export REL_OS_VERS_LONG=$(lsb_release -rs | sed -r "s/^([0-9]+).*/\1/")
+    - export KARABO_TAG="latest_build"
+    - curl http://exflserv05.desy.de/karabo/karaboFramework/tags/$KARABO_TAG/karabo-$KARABO_TAG-Release-$REL_OS_NAME-$REL_OS_VERS_LONG-x86_64.sh > karabo.sh
+    - bash karabo.sh --prefix=/root
+    - source /root/karabo/activate
+    - nosetests .
