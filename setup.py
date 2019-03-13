@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(name='euxfel_bunch_pattern',
       use_scm_version={
-        'write_to': 'src/_version.py'
+        'write_to': 'src/euxfel_bunch_pattern/_version.py'
       },
       description='',
       long_description='',

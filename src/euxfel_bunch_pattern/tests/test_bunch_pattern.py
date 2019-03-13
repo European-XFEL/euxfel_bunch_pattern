@@ -1,7 +1,7 @@
 import numpy as np
 from nose.tools import assert_raises
 
-import bunch_pattern as bp
+import euxfel_bunch_pattern as bp
 
 def test_get_charge():
     a = np.arange(16)
