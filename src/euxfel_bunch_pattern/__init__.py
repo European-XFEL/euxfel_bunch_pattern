@@ -1,5 +1,7 @@
 import numpy as np
 
+from ._version import __version__
+
 # These values are from page 10 of the XFEL timing systems specification,
 # version 2.2, updated following a screenshot of the bunch pattern decoder
 # device.
