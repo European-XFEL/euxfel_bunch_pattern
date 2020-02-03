@@ -89,6 +89,36 @@ def indices_at_destination(bunchpattern, destination):
     matched = (bunchpattern & DESTINATION_MASK) == destination
     return matched.nonzero()[0]
 
+def at_sase(bunchpattern, sase):
+    """Find whether each pulse was sent to a given SASE (1-3)
+    
+    Parameters
+    ----------
+    bunchpattern: numpy array
+      The bunch pattern data
+    sase: int
+      Number 1-3.
+
+    Returns
+    -------
+    atsase: numpy array
+      Boolean array in the same shape as bunchpattern. True means
+      that that pulse was sent to the specified SASE.
+    """
+    if not (1 <= sase <= 3):
+        raise ValueError("Invalid SASE value {!r}, expected 1-3")
+    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+
+    if sase == 1:
+        # Pulses to SASE 1 when soft kick is off
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
+    elif sase == 3:
+        # Pulses to SASE 3 when soft kick is on
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
+    
+    return matched
+
 def indices_at_sase(bunchpattern, sase):
     """Find which pulses are sent to a given SASE (1-3)
 
@@ -104,17 +134,5 @@ def indices_at_sase(bunchpattern, sase):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    if not (1 <= sase <= 3):
-        raise ValueError("Invalid SASE value {!r}, expected 1-3")
-    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
-    matched = (bunchpattern & DESTINATION_MASK) == destination
-
-    if sase == 1:
-        # Pulses to SASE 1 when soft kick is off
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
-    elif sase == 3:
-        # Pulses to SASE 3 when soft kick is on
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
-
-    return matched.nonzero()[0]
+    return at_sase(bunchpattern, sase).nonzero()[0]
 
