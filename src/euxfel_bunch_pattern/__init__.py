@@ -125,8 +125,8 @@ def indices_at_sase(bunchpattern, sase):
 # NOTE:
 # -- LASER_SEED7 is left unexposed, because used by Doocs tests
 # -- labels LP_LAS1/2 refer to LAS internal use and not
-#    and not to the sase1 and sase2.
-class PPL_LABEL_BITS(IntEnum):
+#    to SASE1 and SASE2.
+class PPL_BITS(IntEnum):
     LP_LAS1 = LASER_SEED1
     LP_SASE2 = LASER_SEED2
     LP_FXE = LASER_SEED3
