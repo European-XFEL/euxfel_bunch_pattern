@@ -123,7 +123,7 @@ def indices_at_sase(bunchpattern, sase):
 
 # PPL bit labels as required by LAS group
 # NOTE:
-# -- bit 7 is left unexposed, because used by Doocs tests
+# -- LASER_SEED7 is left unexposed, because used by Doocs tests
 # -- labels LP_LAS1/2 refer to LAS internal use and not
 #    and not to the sase1 and sase2.
 class PPL_LABEL_BITS(IntEnum):
