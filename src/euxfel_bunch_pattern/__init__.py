@@ -1,5 +1,7 @@
 import numpy as np
 
+from enum import IntEnum
+
 from ._version import __version__
 
 # These values are from page 10 of the XFEL timing systems specification,
@@ -30,18 +32,6 @@ LASER_SEED6 = 1 << 13
 LASER_SEED7 = 1 << 14
 LASER_SEED8 = 1 << 15
 LASER_SEED9 = 1 << 16
-
-# PPL bit labels as required by LAS group
-# NOTE: bit 7 is left unexposed, because used by Doocs tests
-PPL_BIT_LABELS = {
-    "LP_LAS1": LASER_SEED1,
-    "LP_SASE2": LASER_SEED2,
-    "LP_FXE": LASER_SEED3,
-    "LP_SPB": LASER_SEED4,
-    "LP_SQS": LASER_SEED5,
-    "LP_SCS": LASER_SEED6,
-    "LP_LAS2": LASER_SEED8,
-}
 
 DESTINATION_MASK = 0xf << 18
 
@@ -130,3 +120,17 @@ def indices_at_sase(bunchpattern, sase):
 
     return matched.nonzero()[0]
 
+
+# PPL bit labels as required by LAS group
+# NOTE:
+# -- bit 7 is left unexposed, because used by Doocs tests
+# -- labels LP_LAS1/2 refer to LAS internal use and not
+#    and not to the sase1 and sase2.
+class PPL_LABEL_BITS(IntEnum):
+    LP_LAS1 = LASER_SEED1
+    LP_SASE2 = LASER_SEED2
+    LP_FXE = LASER_SEED3
+    LP_SPB = LASER_SEED4
+    LP_SQS = LASER_SEED5
+    LP_SCS = LASER_SEED6
+    LP_LAS2 = LASER_SEED8
