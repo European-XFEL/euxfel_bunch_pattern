@@ -31,6 +31,18 @@ LASER_SEED7 = 1 << 14
 LASER_SEED8 = 1 << 15
 LASER_SEED9 = 1 << 16
 
+# PPL bit labels as required by LAS group
+# NOTE: bit 7 is left unexposed, because used by Doocs tests
+PPL_BIT_LABELS = {
+    "LP_LAS1": LASER_SEED1,
+    "LP_SASE2": LASER_SEED2,
+    "LP_FXE": LASER_SEED3,
+    "LP_SPB": LASER_SEED4,
+    "LP_SQS": LASER_SEED5,
+    "LP_SCS": LASER_SEED6,
+    "LP_LAS2": LASER_SEED8,
+}
+
 DESTINATION_MASK = 0xf << 18
 
 # 16 possible bit combinations for destinations, only 9 used at present
