@@ -129,8 +129,8 @@ def indices_at_sase(bunchpattern, sase):
 class PPL_BITS(IntEnum):
     LP_LAS1 = LASER_SEED1
     LP_SASE2 = LASER_SEED2
-    LP_FXE = LASER_SEED3
-    LP_SPB = LASER_SEED4
+    LP_SPB = LASER_SEED3
+    LP_FXE = LASER_SEED4
     LP_SQS = LASER_SEED5
     LP_SCS = LASER_SEED6
     LP_LAS2 = LASER_SEED8
