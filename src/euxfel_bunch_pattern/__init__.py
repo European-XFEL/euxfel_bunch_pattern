@@ -17,8 +17,9 @@ CHARGE_VALUES = np.array([
     1.0, 1.42, 2.0, 4.0,
 ])
 
-LASER_MASK = 0x3ff << 4
+LASER_MASK = 0x1fff << 4
 
+# possible laser sources
 LASER_I1_LASER1 = 1 << 4
 LASER_I1_LASER2 = 1 << 5
 LASER_I1_LASER3 = 1 << 6
@@ -32,6 +33,10 @@ LASER_SEED6 = 1 << 13
 LASER_SEED7 = 1 << 14
 LASER_SEED8 = 1 << 15
 LASER_SEED9 = 1 << 16
+_LASER_SOURCES = {LASER_I1_LASER1, LASER_I1_LASER2, LASER_I1_LASER3, 
+		   LASER_I2_LASER1, LASER_SEED1, LASER_SEED2, LASER_SEED3, 
+		   LASER_SEED4, LASER_SEED5, LASER_SEED6, LASER_SEED7, 
+		   LASER_SEED8, LASER_SEED9}
 
 DESTINATION_MASK = 0xf << 18
 
@@ -119,6 +124,27 @@ def indices_at_sase(bunchpattern, sase):
         matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
 
     return matched.nonzero()[0]
+
+def is_laser(bunchpattern, laser):
+    """Extract information about a given laser from BPT.
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    laser: int
+      One of the LASERS_* constants in this module.
+
+    Returns
+    -------
+    truth value: numpy array, xarray DataArray
+      True or false depending on whether laser pulse was requested.
+    """
+    if laser not in _LASER_SOURCES:
+        raise ValueError("unknown laser source: {}".format(laser))
+
+    matched = (bunchpattern & laser) != 0
+    return matched
 
 
 # PPL bit labels as required by LAS group
