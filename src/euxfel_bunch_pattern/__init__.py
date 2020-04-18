@@ -75,12 +75,33 @@ def get_charge(bunchpattern):
     charge_bits = bunchpattern & CHARGE_MASK
     return CHARGE_VALUES[charge_bits]
 
+def is_destination(bunchpattern, destination):
+    """Find which pulses are sent to a given destination
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    destination: int
+      One of the DESTINATION_* constants in this module.
+
+    Returns
+    -------
+    boolean: numpy array, xarray DataArray
+      true if bunch is going to chosen destination.
+    """
+    if destination not in _DESTINATIONS:
+        raise ValueError("Unrecognised destination: {}".format(destination))
+
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+    return matched
+
 def indices_at_destination(bunchpattern, destination):
     """Find which pulses are sent to a given destination
 
     Parameters
     ----------
-    bunchpattern: numpy array
+    bunchpattern: numpy array, 
       The bunch pattern data
     destination: int
       One of the DESTINATION_* constants in this module.
@@ -90,11 +111,37 @@ def indices_at_destination(bunchpattern, destination):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    if destination not in _DESTINATIONS:
-        raise ValueError("Unrecognised destination: {}".format(destination))
-
-    matched = (bunchpattern & DESTINATION_MASK) == destination
+    matched = is_destination(bunchpattern, destination)
     return matched.nonzero()[0]
+
+def is_sase(bunchpattern, sase):
+    """Find which pulses are sent to a given SASE (1-3)
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    sase: int
+      Number 1-3.
+
+    Returns
+    -------
+    boolean: numpy array, xarray DataArray
+      true if lasing in chosen sase.
+    """
+    if not (1 <= sase <= 3):
+        raise ValueError("Invalid SASE value {!r}, expected 1-3")
+    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+
+    if sase == 1:
+        # Pulses to SASE 1 when soft kick is off
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
+    elif sase == 3:
+        # Pulses to SASE 3 when soft kick is on
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
+
+    return matched
 
 def indices_at_sase(bunchpattern, sase):
     """Find which pulses are sent to a given SASE (1-3)
@@ -111,18 +158,7 @@ def indices_at_sase(bunchpattern, sase):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    if not (1 <= sase <= 3):
-        raise ValueError("Invalid SASE value {!r}, expected 1-3")
-    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
-    matched = (bunchpattern & DESTINATION_MASK) == destination
-
-    if sase == 1:
-        # Pulses to SASE 1 when soft kick is off
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
-    elif sase == 3:
-        # Pulses to SASE 3 when soft kick is on
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
-
+    matched = is_sase(bunchpattern,sase)
     return matched.nonzero()[0]
 
 def is_laser(bunchpattern, laser):
@@ -137,14 +173,32 @@ def is_laser(bunchpattern, laser):
 
     Returns
     -------
-    truth value: numpy array, xarray DataArray
-      True or false depending on whether laser pulse was requested.
+    boolean: numpy array, xarray DataArray
+      True if laser pulse is present.
     """
     if laser not in _LASER_SOURCES:
         raise ValueError("unknown laser source: {}".format(laser))
 
     matched = (bunchpattern & laser) != 0
     return matched
+
+def indices_at_laser(bunchpattern, laser):
+    """Extract information about a given laser from BPT.
+
+    Parameters
+    ----------
+    bunchpattern: numpy array
+      The bunch pattern data
+    laser: int
+      One of the LASERS_* constants in this module.
+
+    Returns
+    -------
+    indices: numpy array
+      The 0-based indexes of the pulses for the specified laser
+    """
+    matched = is_laser(bunchpattern, laser)
+    return matched.nonzero()[0]
 
 
 # PPL bit labels as required by LAS group
