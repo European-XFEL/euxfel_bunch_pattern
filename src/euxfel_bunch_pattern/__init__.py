@@ -33,10 +33,10 @@ LASER_SEED6 = 1 << 13
 LASER_SEED7 = 1 << 14
 LASER_SEED8 = 1 << 15
 LASER_SEED9 = 1 << 16
-_LASER_SOURCES = {LASER_I1_LASER1, LASER_I1_LASER2, LASER_I1_LASER3, 
-		   LASER_I2_LASER1, LASER_SEED1, LASER_SEED2, LASER_SEED3, 
-		   LASER_SEED4, LASER_SEED5, LASER_SEED6, LASER_SEED7, 
-		   LASER_SEED8, LASER_SEED9}
+_LASER_SOURCES = {LASER_I1_LASER1, LASER_I1_LASER2, LASER_I1_LASER3,
+                  LASER_I2_LASER1, LASER_SEED1, LASER_SEED2,
+                  LASER_SEED3, LASER_SEED4, LASER_SEED5, LASER_SEED6,
+                  LASER_SEED7, LASER_SEED8, LASER_SEED9}
 
 DESTINATION_MASK = 0xf << 18
 
@@ -64,6 +64,7 @@ PHOTON_LINE_DEFLECTION = 1 << 27  # Soft kick (e.g. SA3)
 BEAM_DISTRIBUTION_KICK = 1 << 26
 # ----------------------------------------------------------------------------
 
+
 def get_charge(bunchpattern):
     """Extract charge values in nC from bunch pattern data
 
@@ -74,6 +75,7 @@ def get_charge(bunchpattern):
     """
     charge_bits = bunchpattern & CHARGE_MASK
     return CHARGE_VALUES[charge_bits]
+
 
 def is_destination(bunchpattern, destination):
     """Find which pulses are sent to a given destination
@@ -96,12 +98,13 @@ def is_destination(bunchpattern, destination):
     matched = (bunchpattern & DESTINATION_MASK) == destination
     return matched
 
+
 def indices_at_destination(bunchpattern, destination):
     """Find which pulses are sent to a given destination
 
     Parameters
     ----------
-    bunchpattern: numpy array, 
+    bunchpattern: numpy array,
       The bunch pattern data
     destination: int
       One of the DESTINATION_* constants in this module.
@@ -113,6 +116,7 @@ def indices_at_destination(bunchpattern, destination):
     """
     matched = is_destination(bunchpattern, destination)
     return matched.nonzero()[0]
+
 
 def is_sase(bunchpattern, sase):
     """Find which pulses are sent to a given SASE (1-3)
@@ -143,6 +147,7 @@ def is_sase(bunchpattern, sase):
 
     return matched
 
+
 def indices_at_sase(bunchpattern, sase):
     """Find which pulses are sent to a given SASE (1-3)
 
@@ -158,8 +163,9 @@ def indices_at_sase(bunchpattern, sase):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    matched = is_sase(bunchpattern,sase)
+    matched = is_sase(bunchpattern, sase)
     return matched.nonzero()[0]
+
 
 def is_laser(bunchpattern, laser):
     """Extract information about a given laser from BPT.
@@ -181,6 +187,7 @@ def is_laser(bunchpattern, laser):
 
     matched = (bunchpattern & laser) != 0
     return matched
+
 
 def indices_at_laser(bunchpattern, laser):
     """Extract information about a given laser from BPT.
