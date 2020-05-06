@@ -17,8 +17,9 @@ CHARGE_VALUES = np.array([
     1.0, 1.42, 2.0, 4.0,
 ])
 
-LASER_MASK = 0x3ff << 4
+LASER_MASK = 0x1fff << 4
 
+# possible laser sources
 LASER_I1_LASER1 = 1 << 4
 LASER_I1_LASER2 = 1 << 5
 LASER_I1_LASER3 = 1 << 6
@@ -32,6 +33,10 @@ LASER_SEED6 = 1 << 13
 LASER_SEED7 = 1 << 14
 LASER_SEED8 = 1 << 15
 LASER_SEED9 = 1 << 16
+_LASER_SOURCES = {LASER_I1_LASER1, LASER_I1_LASER2, LASER_I1_LASER3,
+                  LASER_I2_LASER1, LASER_SEED1, LASER_SEED2,
+                  LASER_SEED3, LASER_SEED4, LASER_SEED5, LASER_SEED6,
+                  LASER_SEED7, LASER_SEED8, LASER_SEED9}
 
 DESTINATION_MASK = 0xf << 18
 
@@ -59,6 +64,7 @@ PHOTON_LINE_DEFLECTION = 1 << 27  # Soft kick (e.g. SA3)
 BEAM_DISTRIBUTION_KICK = 1 << 26
 # ----------------------------------------------------------------------------
 
+
 def get_charge(bunchpattern):
     """Extract charge values in nC from bunch pattern data
 
@@ -70,12 +76,35 @@ def get_charge(bunchpattern):
     charge_bits = bunchpattern & CHARGE_MASK
     return CHARGE_VALUES[charge_bits]
 
+
+def is_destination(bunchpattern, destination):
+    """Find which pulses are sent to a given destination
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    destination: int
+      One of the DESTINATION_* constants in this module.
+
+    Returns
+    -------
+    boolean: numpy array, xarray DataArray
+      true if bunch is going to chosen destination.
+    """
+    if destination not in _DESTINATIONS:
+        raise ValueError("Unrecognised destination: {}".format(destination))
+
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+    return matched
+
+
 def indices_at_destination(bunchpattern, destination):
     """Find which pulses are sent to a given destination
 
     Parameters
     ----------
-    bunchpattern: numpy array
+    bunchpattern: numpy array,
       The bunch pattern data
     destination: int
       One of the DESTINATION_* constants in this module.
@@ -85,11 +114,39 @@ def indices_at_destination(bunchpattern, destination):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    if destination not in _DESTINATIONS:
-        raise ValueError("Unrecognised destination: {}".format(destination))
-
-    matched = (bunchpattern & DESTINATION_MASK) == destination
+    matched = is_destination(bunchpattern, destination)
     return matched.nonzero()[0]
+
+
+def is_sase(bunchpattern, sase):
+    """Find which pulses are sent to a given SASE (1-3)
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    sase: int
+      Number 1-3.
+
+    Returns
+    -------
+    boolean: numpy array, xarray DataArray
+      true if lasing in chosen sase.
+    """
+    if not (1 <= sase <= 3):
+        raise ValueError("Invalid SASE value {!r}, expected 1-3")
+    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
+    matched = (bunchpattern & DESTINATION_MASK) == destination
+
+    if sase == 1:
+        # Pulses to SASE 1 when soft kick is off
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
+    elif sase == 3:
+        # Pulses to SASE 3 when soft kick is on
+        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
+
+    return matched
+
 
 def indices_at_sase(bunchpattern, sase):
     """Find which pulses are sent to a given SASE (1-3)
@@ -106,18 +163,48 @@ def indices_at_sase(bunchpattern, sase):
     indices: numpy array
       The 0-based indexes of the pulses for the specified destination
     """
-    if not (1 <= sase <= 3):
-        raise ValueError("Invalid SASE value {!r}, expected 1-3")
-    destination = DESTINATION_T5D if (sase == 2) else DESTINATION_T4D
-    matched = (bunchpattern & DESTINATION_MASK) == destination
+    matched = is_sase(bunchpattern, sase)
+    return matched.nonzero()[0]
 
-    if sase == 1:
-        # Pulses to SASE 1 when soft kick is off
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) == 0
-    elif sase == 3:
-        # Pulses to SASE 3 when soft kick is on
-        matched &= (bunchpattern & PHOTON_LINE_DEFLECTION) != 0
 
+def is_laser(bunchpattern, laser):
+    """Extract information about a given laser from BPT.
+
+    Parameters
+    ----------
+    bunchpattern: numpy array, xarray DataArray
+      The bunch pattern data
+    laser: int
+      One of the LASERS_* constants in this module.
+
+    Returns
+    -------
+    boolean: numpy array, xarray DataArray
+      True if laser pulse is present.
+    """
+    if laser not in _LASER_SOURCES:
+        raise ValueError("unknown laser source: {}".format(laser))
+
+    matched = (bunchpattern & laser) != 0
+    return matched
+
+
+def indices_at_laser(bunchpattern, laser):
+    """Extract information about a given laser from BPT.
+
+    Parameters
+    ----------
+    bunchpattern: numpy array
+      The bunch pattern data
+    laser: int
+      One of the LASERS_* constants in this module.
+
+    Returns
+    -------
+    indices: numpy array
+      The 0-based indexes of the pulses for the specified laser
+    """
+    matched = is_laser(bunchpattern, laser)
     return matched.nonzero()[0]
 
 
