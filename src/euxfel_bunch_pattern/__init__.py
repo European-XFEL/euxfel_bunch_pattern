@@ -68,6 +68,9 @@ BEAM_DISTRIBUTION_KICK = 1 << 26
 def get_charge(bunchpattern):
     """Extract charge values in nC from bunch pattern data
 
+    The bunch pattern table stores a maximum allowed charge for each bunch.
+    Actual bunch charges may be lower, and must be recorded elsewhere.
+
     Parameters
     ----------
     bunchpattern : int or numpy array of integers
